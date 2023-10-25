@@ -1,6 +1,6 @@
-#Aksel Villela
-#MIT License
-#10/23/2023
+# Aksel Villela
+# MIT License
+# 10/23/2023
 
 import tkinter as tk
 
@@ -67,6 +67,56 @@ class AVL:
                 return self.rotacion_izquierda(nodo)
         return nodo
 
+    def eliminar(self, nodo, valor):
+        if nodo is None:
+            return nodo
+
+        if valor < nodo.valor:
+            nodo.izquierda = self.eliminar(nodo.izquierda, valor)
+        elif valor > nodo.valor:
+            nodo.derecha = self.eliminar(nodo.derecha, valor)
+        else:
+            if nodo.izquierda is None:
+                return nodo.derecha
+            elif nodo.derecha is None:
+                return nodo.izquierda
+
+            temp = self.nodo_menor_valor(nodo.derecha)
+            nodo.valor = temp.valor
+            nodo.derecha = self.eliminar(nodo.derecha, temp.valor)
+
+        if nodo is None:
+            return nodo
+
+        nodo.altura = 1 + max(self.altura(nodo.izquierda), self.altura(nodo.derecha))
+        balance = self.balance(nodo)
+
+        if balance > 1:
+            if valor < nodo.izquierda.valor:
+                return self.rotacion_derecha(nodo)
+            else:
+                nodo.izquierda = self.rotacion_izquierda(nodo.izquierda)
+                return self.rotacion_derecha(nodo)
+        if balance < -1:
+            if valor > nodo.derecha.valor:
+                return self.rotacion_izquierda(nodo)
+            else:
+                nodo.derecha = self.rotacion_derecha(nodo.derecha)
+                return self.rotacion_izquierda(nodo)
+        return nodo
+
+    def nodo_menor_valor(self, nodo):
+        if nodo.izquierda is None:
+            return nodo
+        return self.nodo_menor_valor(nodo.izquierda)
+
+
+def eliminar_nodo():
+    valor = int(entry.get())
+    avl_tree.raiz = avl_tree.eliminar(avl_tree.raiz, valor)
+    tree_visualizer.canvas.delete("all")  # Borra el lienzo actual
+    tree_visualizer.draw_tree(avl_tree.raiz, 600, 50, 200)
+
 
 def insertar_nodo():
     valor = int(entry.get())
@@ -105,7 +155,7 @@ if __name__ == "__main__":
     root.title("Árbol Binario AVL")
     avl_tree = AVL()
     root.configure(bg="black")
-    # Inserta nodos en el árbol AVL
+
     valores = [15, 6, 50, 4, 23, 7, 72, 5, 71, 73, 74]
     for valor in valores:
         avl_tree.raiz = avl_tree.insertar(avl_tree.raiz, valor)
@@ -113,7 +163,11 @@ if __name__ == "__main__":
     tree_visualizer = TreeVisualizer(root, avl_tree)
     entry = tk.Entry(root)
     entry.pack()
+
     agregar_nodo_button = tk.Button(root, text="Agregar Nodo", command=insertar_nodo)
     agregar_nodo_button.pack()
+
+    eliminar_nodo_button = tk.Button(root, text="Eliminar Nodo", command=eliminar_nodo)
+    eliminar_nodo_button.pack()
 
     root.mainloop()
